@@ -14,7 +14,7 @@ use crate::platform::Platform;
 
 use super::Parser;
 
-use self::a_bogus::ABogus;
+use self::a_bogus::ABogusGenerator;
 use self::models::{Resolution, RoomInfo};
 use self::ms_token::generate_ms_token;
 use self::utils::{get_ac_nonce, get_ttwid};
@@ -53,8 +53,8 @@ impl DouyinParser {
     }
 
     fn get_a_bogus(params: &str) -> LsarResult<String> {
-        let a_bogus = ABogus::new(None);
-        Ok(a_bogus.get_value(params, None, None, None, None, None))
+        let a_bogus = ABogusGenerator::new(None);
+        Ok(a_bogus.generate_a_bogus(params, None, None, None, None, None))
     }
 
     async fn get_room_info(&self) -> LsarResult<RoomInfo> {
