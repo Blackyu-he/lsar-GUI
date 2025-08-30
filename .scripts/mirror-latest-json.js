@@ -2,8 +2,9 @@ import fs from "fs";
 import path from "path";
 
 const mirrors = [
-  { host: "mirror.ghproxy.com", prefix: true },
-  { host: "kkgithub.com" },
+  { host: "gh-proxy.com", prefix: true },
+  { host: "ghproxy.cfd", prefix: true },
+  { host: "ghproxy.net", prefix: true },
 ];
 
 const GITHUB = "https://github.com/";
