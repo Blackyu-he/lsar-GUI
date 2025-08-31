@@ -1,17 +1,14 @@
-import "./index.scss";
 import { children, createSignal, For } from "solid-js";
-import { parse, platforms } from "~/parser";
 import { AiOutlineCheck } from "solid-icons/ai";
+
+import { LazyButton, LazyInput, LazyBadge } from "~/lazy";
+
 import { useAppContext } from "~/context";
-import {
-  LazyButton,
-  LazyFlex,
-  LazyInput,
-  LazySpace,
-  LazySpaceCompact,
-  LazyTag,
-} from "~/lazy";
+
+import { parse, platforms } from "~/parser";
 import { isValidNumberOrHttpsUrl } from "~/parser/validators";
+
+import * as styles from "./index.css";
 
 const Search = () => {
   const [
@@ -46,24 +43,23 @@ const Search = () => {
   };
 
   const buttons = children(() => (
-    <For each={Object.keys(platforms)}>
-      {(key) => {
-        const item = platforms[key as Platform];
+    <div class={styles.badges}>
+      <For each={Object.keys(platforms)}>
+        {(key) => {
+          const item = platforms[key as Platform];
 
-        return (
-          <LazyTag
-            color={
-              currentPlatform() === key
-                ? "var(--alley-color-success)"
-                : "default"
-            }
-            onClick={() => selectPlatform(key as Platform)}
-          >
-            {item.label}
-          </LazyTag>
-        );
-      }}
-    </For>
+          return (
+            <LazyBadge
+              shape="rounded"
+              color={currentPlatform() === key ? "brand" : "informative"}
+              onClick={() => selectPlatform(key as Platform)}
+            >
+              {item.label}
+            </LazyBadge>
+          );
+        }}
+      </For>
+    </div>
   ));
 
   const onParse = async () => {
@@ -89,28 +85,25 @@ const Search = () => {
   };
 
   return (
-    <>
-      <LazyFlex id="search" direction="vertical">
-        <LazySpaceCompact>
-          <LazyInput
-            placeholder="输入房间号或直播间链接"
-            value={input()}
-            onChange={onInput}
-            disabled={loading()}
-          />
+    <div>
+      {buttons()}
+
+      <LazyInput
+        placeholder="输入房间号或直播间链接"
+        value={input()}
+        onChange={onInput}
+        disabled={loading()}
+        contentAfter={
           <LazyButton
             icon={<AiOutlineCheck />}
             isLoading={loading()}
             disabled={!currentPlatform() || !input()}
             onClick={onParse}
+            appearance="transparent"
           />
-        </LazySpaceCompact>
-
-        <LazySpace gap={8} style={{ "margin-top": "1rem" }}>
-          {buttons()}
-        </LazySpace>
-      </LazyFlex>
-    </>
+        }
+      />
+    </div>
   );
 };
 
