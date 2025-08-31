@@ -6,6 +6,10 @@ export const item = style({
   height: "fit-content",
 
   selectors: {
+    "&:hover": {
+      cursor: "default",
+    },
+
     "&:not(:last-of-type)": {
       marginBottom: vars.spacingVerticalM,
     },
@@ -50,15 +54,16 @@ export const button = style({
 });
 
 export const deleteButton = style({
-  color: themeContract.colorStatusDangerForeground1,
+  color: themeContract.colorStatusDangerForeground2,
 
   selectors: {
     "&:hover": {
+      cursor: "default",
       color: themeContract.colorStatusDangerForeground3,
     },
 
     "&:hover:active": {
-      color: themeContract.colorStatusDangerForeground2,
+      color: themeContract.colorStatusDangerForeground1,
     },
   },
 });
