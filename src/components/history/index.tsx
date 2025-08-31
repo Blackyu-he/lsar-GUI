@@ -1,8 +1,10 @@
 import { createSignal, For, lazy, Show, useContext } from "solid-js";
-import HistoryItem from "./item";
-import "./index.scss";
+
 import { AppContext } from "~/context";
-import { LazyFlex } from "~/lazy";
+
+import HistoryItem from "./Item";
+
+import * as styles from "./index.css";
 
 const LazyEmpty = lazy(() => import("alley-components/lib/components/empty"));
 
@@ -16,10 +18,11 @@ const History = (props: HistoryProps) => {
   const [parsingIndex, setParsingIndex] = createSignal<number | null>(null);
 
   return (
-    <LazyFlex
-      id="history"
-      class={props.items?.length ? undefined : "history-empty"}
-      direction="vertical"
+    <div
+      classList={{
+        [styles.history]: true,
+        "history-empty": !props.items?.length,
+      }}
     >
       <Show
         when={props.items?.length}
@@ -39,7 +42,7 @@ const History = (props: HistoryProps) => {
           )}
         </For>
       </Show>
-    </LazyFlex>
+    </div>
   );
 };
 
