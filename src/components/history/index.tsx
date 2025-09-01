@@ -1,12 +1,10 @@
-import { createSignal, For, lazy, Show } from "solid-js";
+import { createSignal, For, Show } from "solid-js";
 
 import { useHistoryContext } from "~/contexts/HistoryContext";
 
 import HistoryItem from "./Item";
 
 import * as styles from "./index.css";
-
-const LazyEmpty = lazy(() => import("alley-components/lib/components/empty"));
 
 const History = () => {
   const { historyItems, refetchHistoryItems } = useHistoryContext();
@@ -20,10 +18,7 @@ const History = () => {
         "history-empty": !historyItems()?.length,
       }}
     >
-      <Show
-        when={historyItems()?.length}
-        fallback={<LazyEmpty description="空空如也" />}
-      >
+      <Show when={historyItems()?.length}>
         <For each={historyItems()}>
           {(item, index) => (
             <HistoryItem

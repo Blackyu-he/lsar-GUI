@@ -2,7 +2,7 @@ import { createEffect, createSignal } from "solid-js";
 
 import { getPlayerPaths, writeConfigFile } from "~/command";
 
-import { AlleyFlex, LazyButton } from "~/lazy";
+import { LazyButton } from "~/lazy";
 
 import { Drawer } from "../drawer/Drawer";
 
@@ -74,7 +74,7 @@ const Settings = () => {
       title="设置"
       onClose={onCancel}
     >
-      <AlleyFlex direction="vertical" gap={16} style={{ "min-width": "400px" }}>
+      <div class={styles.container}>
         <DarkMode
           mode={lsarConfig()?.dark_mode || "system"}
           onChoice={(mode) =>
@@ -130,7 +130,7 @@ const Settings = () => {
             保存
           </LazyButton>
         </div>
-      </AlleyFlex>
+      </div>
     </Drawer>
   );
 };
