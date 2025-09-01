@@ -20,6 +20,13 @@ export const header = style({
   flexShrink: 1,
 });
 
+export const headerHeader = style({
+  flex: 1,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+});
+
 export const description = style({
   display: "flex",
   alignItems: "center",
@@ -35,10 +42,19 @@ export const descriptionPart1 = style({
 
 export const anchor = style({
   color: themeContract.colorNeutralForeground3,
+  fontSize: vars.fontSizeBase200,
 });
 
 export const category = style({
   color: themeContract.colorNeutralForeground4,
+  fontSize: vars.fontSizeBase200,
+});
+
+export const actions = style({
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "flex-end",
+  gap: vars.spacingHorizontalXXS,
 });
 
 export const button = style({

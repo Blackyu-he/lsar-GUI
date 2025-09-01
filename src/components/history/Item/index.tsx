@@ -66,98 +66,95 @@ const HistoryItem = (props: HistoryItemProps) => {
   };
 
   return (
-    <LazyCard
-      size="small"
-      class={styles.item}
-      orientation="horizontal"
-      onClick={() => {}}
-    >
+    <LazyCard size="small" class={styles.item} onClick={() => {}}>
       <LazyCardHeader
         class={styles.header}
-        header={<LazyText weight="semibold">{props.last_title}</LazyText>}
-        description={
-          <div class={styles.description}>
-            <div class={styles.descriptionPart1}>
-              <img
-                width={12}
-                height={12}
-                src={platforms[props.platform].logo}
-                alt={platforms[props.platform].label}
-              />
-              <Caption1 class={styles.anchor}>{props.anchor}</Caption1>
-            </div>
+        header={
+          <div class={styles.headerHeader}>
+            <LazyText weight="semibold">{props.last_title}</LazyText>
 
             <Caption1 class={styles.category} italic>
               {props.category}
             </Caption1>
           </div>
         }
-        action={
-          <div>
-            <LazyTooltip
-              content="解析本直播间"
-              relationship="label"
-              positioning="after"
-              withArrow
-            >
-              <LazyButton
-                class={styles.button}
-                icon={
-                  <Show
-                    when={!parsing()}
-                    fallback={<LazySpinner size="extra-tiny" />}
-                  >
-                    <AiFillApi font-size={BUTTON_ICON_FONT_SIZE} />
-                  </Show>
-                }
-                appearance="transparent"
-                shape="circular"
-                isLoading={parsing()}
-                onClick={onParse}
-                size="small"
-                disabled={props.disableParseButton}
-              />
-            </LazyTooltip>
-
-            <LazyTooltip
-              content="在浏览器中打开此直播间"
-              relationship="label"
-              positioning="after"
-              withArrow
-            >
-              <LazyButton
-                class={styles.button}
-                icon={<AiFillChrome font-size={BUTTON_ICON_FONT_SIZE} />}
-                appearance="transparent"
-                shape="circular"
-                size="small"
-                onClick={() =>
-                  open(platforms[props.platform].roomBaseURL + props.room_id)
-                }
-              />
-            </LazyTooltip>
-
-            <LazyTooltip
-              content="删除本条历史记录"
-              relationship="label"
-              positioning="after"
-              withArrow
-            >
-              <LazyButton
-                classList={{
-                  [styles.button]: true,
-                  [styles.deleteButton]: true,
-                }}
-                onClick={onDelete}
-                icon={<AiFillDelete font-size={BUTTON_ICON_FONT_SIZE} />}
-                appearance="transparent"
-                shape="circular"
-                size="small"
-              />
-            </LazyTooltip>
-          </div>
-        }
       />
+
+      <div class={styles.description}>
+        <div class={styles.descriptionPart1}>
+          <img
+            width={12}
+            height={12}
+            src={platforms[props.platform].logo}
+            alt={platforms[props.platform].label}
+          />
+          <Caption1 class={styles.anchor}>{props.anchor}</Caption1>
+        </div>
+
+        <div class={styles.actions}>
+          <LazyTooltip
+            content="解析本直播间"
+            relationship="label"
+            positioning="after"
+            withArrow
+          >
+            <LazyButton
+              class={styles.button}
+              icon={
+                <Show
+                  when={!parsing()}
+                  fallback={<LazySpinner size="extra-tiny" />}
+                >
+                  <AiFillApi font-size={BUTTON_ICON_FONT_SIZE} />
+                </Show>
+              }
+              appearance="transparent"
+              shape="circular"
+              isLoading={parsing()}
+              onClick={onParse}
+              size="small"
+              disabled={props.disableParseButton}
+            />
+          </LazyTooltip>
+
+          <LazyTooltip
+            content="在浏览器中打开此直播间"
+            relationship="label"
+            positioning="after"
+            withArrow
+          >
+            <LazyButton
+              class={styles.button}
+              icon={<AiFillChrome font-size={BUTTON_ICON_FONT_SIZE} />}
+              appearance="transparent"
+              shape="circular"
+              size="small"
+              onClick={() =>
+                open(platforms[props.platform].roomBaseURL + props.room_id)
+              }
+            />
+          </LazyTooltip>
+
+          <LazyTooltip
+            content="删除本条历史记录"
+            relationship="label"
+            positioning="after"
+            withArrow
+          >
+            <LazyButton
+              classList={{
+                [styles.button]: true,
+                [styles.deleteButton]: true,
+              }}
+              onClick={onDelete}
+              icon={<AiFillDelete font-size={BUTTON_ICON_FONT_SIZE} />}
+              appearance="transparent"
+              shape="circular"
+              size="small"
+            />
+          </LazyTooltip>
+        </div>
+      </div>
     </LazyCard>
   );
 };
