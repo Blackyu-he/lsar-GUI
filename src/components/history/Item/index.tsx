@@ -1,7 +1,7 @@
-import { createSignal, Show } from "solid-js";
+import { createMemo, Show } from "solid-js";
 import { AiFillApi, AiFillChrome, AiFillDelete } from "solid-icons/ai";
 
-import { Caption1, useToast } from "fluent-solid";
+import { Caption1 } from "fluent-solid";
 
 import { deleteHistoryByID, open } from "~/command";
 import {
@@ -13,56 +13,32 @@ import {
   LazyTooltip,
 } from "~/lazy";
 
-import { parse, platforms } from "~/parser";
+import { platforms } from "~/parser";
 
-import { useParsedResultContext } from "~/contexts/ParsedResultContext";
-import { useConfigContext } from "~/contexts/ConfigContext";
-import { useSettingsContext } from "~/contexts/SettingsContext";
+import { useParsingContext } from "~/contexts/ParsingContext";
 
 import * as styles from "./index.css";
 
 interface HistoryItemProps extends HistoryItem {
+  index: number;
   onDelete: () => void;
-  disableParseButton?: boolean;
-  startParsing: () => void;
-  endParsing: () => void;
 }
 
 const BUTTON_ICON_FONT_SIZE = "16px";
 
 const HistoryItem = (props: HistoryItemProps) => {
-  const toast = useToast();
-  const { config } = useConfigContext();
-  const { setParsedResult } = useParsedResultContext();
-  const { setShowSettings: setShowBilibiliCookieEditor } = useSettingsContext();
+  const { onParse, parsingHistoryItemIndex: parsingIndex } =
+    useParsingContext();
 
-  const [parsing, setParsing] = createSignal(false);
+  const isParsing = createMemo(() => parsingIndex() === props.index);
 
   const onDelete = async () => {
     await deleteHistoryByID(props.id);
     props.onDelete();
   };
 
-  const onParse = async () => {
-    props.startParsing();
-    setParsing(true);
-    setParsedResult(); // 清空解析结果
-
-    const result = await parse(
-      props.platform,
-      props.room_id,
-      config()!,
-      setShowBilibiliCookieEditor,
-    );
-
-    if (result instanceof Error) {
-      toast.error(result.message, { position: "bottom-right" });
-    } else {
-      setParsedResult(result);
-    }
-
-    setParsing(false);
-    props.endParsing();
+  const handleParse = async () => {
+    onParse(props.platform, props.room_id, props.index);
   };
 
   return (
@@ -102,7 +78,7 @@ const HistoryItem = (props: HistoryItemProps) => {
               class={styles.button}
               icon={
                 <Show
-                  when={!parsing()}
+                  when={!isParsing()}
                   fallback={<LazySpinner size="extra-tiny" />}
                 >
                   <AiFillApi font-size={BUTTON_ICON_FONT_SIZE} />
@@ -110,10 +86,13 @@ const HistoryItem = (props: HistoryItemProps) => {
               }
               appearance="transparent"
               shape="circular"
-              isLoading={parsing()}
-              onClick={onParse}
+              isLoading={isParsing()}
+              onClick={handleParse}
               size="small"
-              disabled={props.disableParseButton}
+              disabled={
+                parsingIndex() !== null &&
+                (parsingIndex() !== props.index || parsingIndex() === -1)
+              }
             />
           </LazyTooltip>
 
