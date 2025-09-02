@@ -81,7 +81,9 @@ const LinkItem = (props: LinkItemProps) => {
   return (
     <div class={styles.item}>
       <div class={styles.itemLinkContainer}>
-        <LazyLink class={styles.itemLink}>{props.link}</LazyLink>
+        <LazyLink class={styles.itemLink} onClick={() => props.onPlay()}>
+          {props.link}
+        </LazyLink>
       </div>
 
       <div class={styles.itemLinkActions}>
