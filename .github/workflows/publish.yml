@@ -134,7 +134,7 @@ jobs:
     permissions:
       contents: write
     runs-on: ubuntu-22.04
-    needs: build-tauri
+    needs: [create-release, build-tauri]
 
     steps:
       - name: publish release
@@ -186,7 +186,7 @@ jobs:
     permissions:
       contents: write
     runs-on: ubuntu-22.04
-    needs: publish-release
+    needs: [create-release, publish-release]
     env:
       release_id: ${{ needs.create-release.outputs.release_id }}
 
