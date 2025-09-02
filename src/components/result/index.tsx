@@ -35,12 +35,14 @@ const Result = () => {
         description={
           <Show when={parsedResult()?.title}>
             <div class={styles.headerDescription}>
-              <div class={styles.headerDescriptionItem}>
-                <LazyLabel weight="semibold" size="small">
-                  分类
-                </LazyLabel>
-                <span>{parsedResult()?.category ?? "无"}</span>
-              </div>
+              <Show when={parsedResult()?.category}>
+                <div class={styles.headerDescriptionItem}>
+                  <LazyLabel weight="semibold" size="small">
+                    分类
+                  </LazyLabel>
+                  <span>{parsedResult()?.category ?? "无"}</span>
+                </div>
+              </Show>
 
               <div class={styles.headerDescriptionItem}>
                 <LazyLabel weight="semibold" size="small">
