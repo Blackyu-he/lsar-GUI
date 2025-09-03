@@ -13,6 +13,8 @@ mod setup;
 #[cfg(all(desktop, not(debug_assertions)))]
 mod update;
 mod utils;
+#[cfg(windows)]
+mod windows;
 
 #[macro_use]
 extern crate tracing;
@@ -53,6 +55,18 @@ async fn show_main_window(app: AppHandle) {
 
     main_window.show().unwrap();
     main_window.set_focus().unwrap();
+}
+
+#[cfg(windows)]
+#[tauri::command]
+async fn set_titlebar_color_mode(
+    window: tauri::WebviewWindow,
+    color_mode: crate::windows::ColorMode,
+) -> LsarResult<()> {
+    let hwnd = window.hwnd()?;
+
+    crate::windows::set_window_color_mode(hwnd, color_mode)?;
+    Ok(())
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -100,7 +114,9 @@ pub fn run() {
             parse_huya,
             parse_douyin,
             parse_bilibili,
-            get_player_paths
+            get_player_paths,
+            #[cfg(windows)]
+            set_titlebar_color_mode
         ])
         .run(tauri::generate_context!())
         .expect("Error while running tauri application");

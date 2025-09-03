@@ -1,7 +1,10 @@
 import { createEffect, type Resource } from "solid-js";
+import { setTitlebarColorMode } from "~/commands/window";
 
 export function useDarkMode(config: Resource<Config>) {
   const switchDark = (isDark: boolean) => {
+    setTitlebarColorMode(isDark ? "DARK" : "LIGHT");
+
     const currentTheme = document.documentElement.getAttribute("data-theme");
 
     if (!currentTheme) {

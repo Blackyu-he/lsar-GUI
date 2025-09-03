@@ -8,6 +8,13 @@ pub(super) type LsarResult<T> = std::result::Result<T, LsarError>;
 
 #[derive(Debug, thiserror::Error)]
 pub(super) enum LsarError {
+    #[cfg(windows)]
+    #[error(transparent)]
+    Windows(#[from] windows::core::Error),
+
+    #[error(transparent)]
+    Tauri(#[from] tauri::Error),
+
     #[error(transparent)]
     Sqlite(#[from] sqlx::Error),
     #[error(transparent)]
