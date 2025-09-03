@@ -11,7 +11,7 @@ pub struct RoomInfo {
 pub struct RoomData {
     pub data: Vec<StreamData>,
     pub user: UserInfo,
-    pub partition_road_map: PartitionRoadMap,
+    pub partition_road_map: Option<PartitionRoadMap>,
 }
 
 #[derive(Debug, Deserialize)]

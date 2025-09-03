@@ -227,7 +227,10 @@ impl DouyinParser {
         debug!("Room status: {}", room_data.status);
 
         let stream_urls = self.extract_stream_urls(room_data)?;
-        let category = self.extract_category(partition_info);
+        let category = partition_info
+            .as_ref()
+            .map(|pi| self.extract_category(pi))
+            .unwrap_or_default();
 
         let result = ParsedResult {
             platform: Platform::Douyin,
