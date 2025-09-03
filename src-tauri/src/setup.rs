@@ -54,20 +54,7 @@ pub fn setup_app(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>>
     #[cfg(all(desktop, not(debug_assertions)))]
     setup_updater(app)?;
 
-    #[cfg(any(target_os = "macos", target_os = "windows"))]
-    {
-        use crate::config::Config;
-        let config = Config::read_from_file()?;
-        let window = create_main_window(app.app_handle(), config.transparent)?;
-        if config.transparent {
-            apply_window_effect(window)?;
-        }
-    }
-
-    #[cfg(target_os = "linux")]
-    {
-        create_main_window(app.app_handle())?;
-    }
+    create_main_window(app.app_handle())?;
 
     let eval_channel = EvalChannel {
         sender: Arc::new(Mutex::new(None)),
@@ -97,29 +84,8 @@ fn setup_updater(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>>
     Ok(())
 }
 
-#[cfg(any(target_os = "macos", target_os = "windows"))]
-fn apply_window_effect(window: WebviewWindow) -> Result<(), Box<dyn std::error::Error>> {
-    #[cfg(target_os = "macos")]
-    {
-        info!("Applying vibrancy effect on macOS");
-        use window_vibrancy::{apply_vibrancy, NSVisualEffectMaterial};
-        window.set_title_bar_style(tauri::utils::TitleBarStyle::Overlay)?;
-        apply_vibrancy(&window, NSVisualEffectMaterial::HudWindow, None, None)?;
-    }
-
-    #[cfg(target_os = "windows")]
-    {
-        info!("Applying acrylic effect on Windows");
-        use window_vibrancy::apply_acrylic;
-        apply_acrylic(&window, Some((18, 18, 18, 125)))?;
-    }
-
-    Ok(())
-}
-
 pub fn create_main_window(
     app: &tauri::AppHandle,
-    #[cfg(any(target_os = "windows", target_os = "macos"))] transparent: bool,
 ) -> Result<WebviewWindow, Box<dyn std::error::Error>> {
     trace!("Initializing main application window");
 
@@ -136,18 +102,13 @@ pub fn create_main_window(
         WINDOW_TITLE, WINDOW_WIDTH, WINDOW_HEIGHT
     );
 
-    let window_builder = WebviewWindowBuilder::new(app, "main", WebviewUrl::default())
+    let window = WebviewWindowBuilder::new(app, "main", WebviewUrl::default())
         .title(WINDOW_TITLE)
         .resizable(false)
         .maximizable(false)
         .visible(false)
-        .inner_size(WINDOW_WIDTH, WINDOW_HEIGHT);
-
-    #[cfg(any(target_os = "windows", target_os = "macos"))]
-    let window = window_builder.transparent(transparent).build();
-
-    #[cfg(target_os = "linux")]
-    let window = window_builder.build();
+        .inner_size(WINDOW_WIDTH, WINDOW_HEIGHT)
+        .build();
 
     // Attempt to build the window
     match window {
