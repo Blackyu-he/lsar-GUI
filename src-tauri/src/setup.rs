@@ -102,16 +102,18 @@ pub fn create_main_window(
         WINDOW_TITLE, WINDOW_WIDTH, WINDOW_HEIGHT
     );
 
-    let window = WebviewWindowBuilder::new(app, "main", WebviewUrl::default())
+    let window_builder = WebviewWindowBuilder::new(app, "main", WebviewUrl::default())
         .title(WINDOW_TITLE)
         .resizable(false)
         .maximizable(false)
         .visible(false)
-        .inner_size(WINDOW_WIDTH, WINDOW_HEIGHT)
-        .build();
+        .inner_size(WINDOW_WIDTH, WINDOW_HEIGHT);
+
+    #[cfg(target_os = "macos")]
+    let win_builder = window_builder.title_bar_style(tauri::TitleBarStyle::Overlay);
 
     // Attempt to build the window
-    match window {
+    match win_builder.build() {
         Ok(w) => {
             info!("Main application window created successfully");
             Ok(w)
