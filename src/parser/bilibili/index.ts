@@ -28,8 +28,8 @@ export default function createBilibiliParser(
   input: string | number,
   cookie: string,
 ) {
-  let roomID: number | undefined = undefined;
-  let url: string | undefined = undefined;
+  let roomID: number | undefined;
+  let url: string | undefined;
 
   if (typeof input === "number") roomID = input;
   else url = input;

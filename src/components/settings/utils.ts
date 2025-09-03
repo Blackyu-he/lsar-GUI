@@ -27,7 +27,7 @@ export function isValidCookie(cookieString: string): boolean {
 
 function isValidKey(key: string): boolean {
   // 键名应该只包含字母数字字符、下划线和连字符
-  const keyRegex = /^[a-zA-Z0-9_\-]+$/;
+  const keyRegex = /^[a-zA-Z0-9_-]+$/;
   return keyRegex.test(key);
 }
 
