@@ -6,12 +6,13 @@ on:
       - main
     paths:
       - ".github/workflows/**"
-      - "src/**"
       - "src-tauri/src/**"
       - "src-tauri/Cargo.toml"
       - "src-tauri/Cargo.lock"
+      - "src-tauri/build.rs"
       - "src-tauri/tauri.conf.json"
       - "src-tauri/tauri.*.conf.json"
+      - "src/**"
       - "package.json"
       - "bun.lockb"
       - "bunfig.toml"
@@ -24,9 +25,43 @@ env:
   RUST_BACKTRACE: 1
 
 jobs:
+  # 检测文件变化类型
+  detect-changes:
+    name: "Detect Changes"
+    runs-on: ubuntu-22.04
+    outputs:
+      frontend: ${{ steps.changes.outputs.frontend }}
+      backend: ${{ steps.changes.outputs.backend }}
+      workflow: ${{ steps.changes.outputs.workflow }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: changes
+        with:
+          filters: |
+            frontend:
+              - 'src/**'
+              - 'package.json'
+              - 'bun.lockb'
+              - 'bunfig.toml'
+              - 'tsconfig.json'
+              - 'vite.config.ts'
+              - 'biome.json'
+            backend:
+              - 'src-tauri/src/**'
+              - 'src-tauri/Cargo.toml'
+              - 'src-tauri/Cargo.lock'
+              - 'src-tauri/tauri.conf.json'
+              - 'src-tauri/tauri.*.conf.json'
+              - 'src-tauri/build.rs'
+            workflow:
+              - '.github/workflows/**'
+
   frontend-check:
     name: "Frontend Code Check"
     runs-on: ubuntu-22.04
+    needs: detect-changes
+    if: needs.detect-changes.outputs.frontend == 'true' || needs.detect-changes.outputs.workflow == 'true'
     steps:
       - uses: actions/checkout@v4
 
@@ -59,6 +94,8 @@ jobs:
 
   rust-check:
     name: "Rust Code Check"
+    needs: detect-changes
+    if: needs.detect-changes.outputs.backend == 'true' || needs.detect-changes.outputs.workflow == 'true'
     strategy:
       fail-fast: false
       matrix:
