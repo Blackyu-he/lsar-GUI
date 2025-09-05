@@ -57,7 +57,6 @@ impl HuyaParser {
             error!("Failed to fetch HTML: {}", e);
             e
         })?;
-        debug!("Fetched HTML: {}", html);
 
         let stream_str = HtmlParser::extract_stream_info(&html).map_err(|e| {
             error!("Failed to extract stream info: {}", e);
