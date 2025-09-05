@@ -5,7 +5,6 @@ mod models;
 mod url;
 mod uuid;
 
-use reqwest::header::USER_AGENT;
 use serde_json::Value;
 use url::UrlParser;
 
@@ -26,7 +25,7 @@ use super::{ParsedResult, Parser};
 
 use self::models::{BaseSteamInfo, CacheProfile};
 
-const BASE_URL: &str = "https://m.huya.com/";
+const BASE_URL: &str = "https://www.huya.com/";
 
 struct HuyaParser {
     room_id: Option<u64>,
@@ -36,8 +35,7 @@ struct HuyaParser {
 
 impl HuyaParser {
     fn new(room_id: Option<u64>, page_url: String) -> Self {
-        let mut client = Client::new();
-        client.insert_header(USER_AGENT, "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36").unwrap();
+        let client = Client::new();
 
         HuyaParser {
             room_id,
@@ -59,6 +57,7 @@ impl HuyaParser {
             error!("Failed to fetch HTML: {}", e);
             e
         })?;
+        debug!("Fetched HTML: {}", html);
 
         let stream_str = HtmlParser::extract_stream_info(&html).map_err(|e| {
             error!("Failed to extract stream info: {}", e);
