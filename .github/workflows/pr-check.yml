@@ -168,3 +168,19 @@ jobs:
       - name: Cargo build
         working-directory: ./src-tauri
         run: cargo build --target ${{ matrix.rust-target }}
+
+  # 自动合并PR
+  auto-merge:
+    name: "Auto Merge PR"
+    runs-on: ubuntu-22.04
+    needs: [detect-changes, frontend-check, rust-check]
+    if: always() && !cancelled() && !failure()
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Auto merge PR
+        uses: pascalgn/merge-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MERGE_METHOD: squash
