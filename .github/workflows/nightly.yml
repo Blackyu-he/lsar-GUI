@@ -138,7 +138,7 @@ jobs:
 
   build-nightly:
     needs: create-nightly-release
-    if: always() && needs.create-nightly-release.outputs.result == 'success'
+    if: always() && needs.create-nightly-release.result == 'success'
     permissions:
       contents: write
     strategy:
