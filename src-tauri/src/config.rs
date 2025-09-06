@@ -36,12 +36,6 @@ pub struct Config {
     dark_mode: DarkMode,
     player: Player,
     platform: Platform,
-    #[serde(default = "default_transparent")]
-    pub transparent: bool,
-}
-
-fn default_transparent() -> bool {
-    true
 }
 
 impl Config {
@@ -71,10 +65,7 @@ impl Config {
         // 防止用户在启动程序后删除配置文件引发异常
         if !CONFIG_FILE_PATH.exists() {
             debug!("Config file not found, creating default config");
-            let default_config = Config {
-                transparent: default_transparent(),
-                ..Default::default()
-            };
+            let default_config = Config::default();
             let config = toml::to_string(&default_config).map_err(|e| {
                 error!("Failed to serialize default config: {:?}", e);
                 e
