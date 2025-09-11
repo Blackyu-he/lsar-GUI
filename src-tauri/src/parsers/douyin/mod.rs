@@ -1,99 +1,40 @@
-mod a_bogus;
+// mod a_bogus;
 mod models;
-mod ms_token;
+// mod ms_token;
 mod utils;
 
 use std::collections::HashMap;
 
+use regex::Regex;
 use reqwest::header::{COOKIE, UPGRADE_INSECURE_REQUESTS};
 use serde_json::Value;
-use url::Url;
 
-use crate::error::{HTTPError, LsarError, LsarResult, RoomStateError};
+use crate::error::{LsarError, LsarResult, RoomStateError};
 use crate::network::http::Client;
+use crate::parsers::douyin::models::{RoomData, UserInfo};
 use crate::parsers::ParsedResult;
 use crate::platform::Platform;
 
 use super::Parser;
 
-use self::a_bogus::ABogusGenerator;
 use self::models::{PartitionRoadMap, Resolution, RoomInfo, StreamData};
-use self::ms_token::generate_ms_token;
 use self::utils::{get_ac_nonce, get_ttwid};
 
 const DOUYIN_LIVE_BASE_URL: &str = "https://live.douyin.com";
-const DOUYIN_API_BASE_URL: &str = "https://live.douyin.com/webcast/room/web/enter/";
-const DEFAULT_SCREEN_WIDTH: u32 = 1920;
-const DEFAULT_SCREEN_HEIGHT: u32 = 1080;
-const BROWSER_VERSION: &str = "139.0.0.0";
-const ROOM_CLOSED_MESSAGE: &str = "该内容暂时无法无法查看";
-
-#[derive(Debug)]
-struct ApiParams {
-    aid: u32,
-    app_name: String,
-    live_id: u32,
-    device_platform: String,
-    language: String,
-    enter_from: String,
-    cookie_enabled: bool,
-    screen_width: u32,
-    screen_height: u32,
-    browser_language: String,
-    browser_platform: String,
-    browser_name: String,
-    browser_version: String,
-    web_rid: u64,
-    enter_source: String,
-    is_need_double_stream: bool,
-    insert_task_id: String,
-    live_reason: String,
-}
-
-impl Default for ApiParams {
-    fn default() -> Self {
-        Self {
-            aid: 6383,
-            app_name: "douyin_web".to_string(),
-            live_id: 1,
-            device_platform: "web".to_string(),
-            language: "en".to_string(),
-            enter_from: "web_live".to_string(),
-            cookie_enabled: true,
-            screen_width: DEFAULT_SCREEN_WIDTH,
-            screen_height: DEFAULT_SCREEN_HEIGHT,
-            browser_language: "en".to_string(),
-            browser_platform: "MacIntel".to_string(),
-            browser_name: "Chrome".to_string(),
-            browser_version: BROWSER_VERSION.to_string(),
-            web_rid: 0,
-            enter_source: String::new(),
-            is_need_double_stream: false,
-            insert_task_id: String::new(),
-            live_reason: String::new(),
-        }
-    }
-}
+// const ROOM_CLOSED_MESSAGE: &str = "该内容暂时无法无法查看";
 
 pub struct DouyinParser {
     room_id: u64,
     room_url: String,
     client: Client,
-    api_params: ApiParams,
 }
 
 impl DouyinParser {
     pub fn new(room_id: u64) -> Self {
-        let api_params = ApiParams {
-            web_rid: room_id,
-            ..Default::default()
-        };
-
         DouyinParser {
             room_id,
             room_url: format!("{}/{}", DOUYIN_LIVE_BASE_URL, room_id),
             client: Client::new(),
-            api_params,
         }
     }
 
@@ -116,104 +57,38 @@ impl DouyinParser {
         Ok(())
     }
 
-    /// 生成 a_bogus
-    fn generate_signature(params: &str) -> LsarResult<String> {
-        let a_bogus = ABogusGenerator::new(None);
-        Ok(a_bogus.generate_a_bogus(params, None, None, None, None, None))
-    }
-
-    /// 构建 API URL
-    fn build_api_url(&self) -> LsarResult<Url> {
-        let mut url = Url::parse(DOUYIN_API_BASE_URL)?;
-
-        // 添加基础参数
-        self.add_base_query_params(&mut url);
-
-        // 添加认证参数
-        let ms_token = generate_ms_token();
-        url.query_pairs_mut().append_pair("msToken", &ms_token);
-
-        // 添加签名
-        let query_string = url.query().unwrap_or_default();
-        let signature = Self::generate_signature(query_string)?;
-        url.query_pairs_mut().append_pair("a_bogus", &signature);
-
-        Ok(url)
-    }
-
-    /// 添加基础查询参数
-    fn add_base_query_params(&self, url: &mut Url) {
-        let params = &self.api_params;
-        url.query_pairs_mut()
-            .append_pair("aid", &params.aid.to_string())
-            .append_pair("app_name", &params.app_name)
-            .append_pair("live_id", &params.live_id.to_string())
-            .append_pair("device_platform", &params.device_platform)
-            .append_pair("language", &params.language)
-            .append_pair("enter_from", &params.enter_from)
-            .append_pair("cookie_enabled", &params.cookie_enabled.to_string())
-            .append_pair("screen_width", &params.screen_width.to_string())
-            .append_pair("screen_height", &params.screen_height.to_string())
-            .append_pair("browser_language", &params.browser_language)
-            .append_pair("browser_platform", &params.browser_platform)
-            .append_pair("browser_name", &params.browser_name)
-            .append_pair("browser_version", &params.browser_version)
-            .append_pair("web_rid", &params.web_rid.to_string())
-            .append_pair("enter_source", &params.enter_source)
-            .append_pair(
-                "is_need_double_stream",
-                &params.is_need_double_stream.to_string(),
-            )
-            .append_pair("insert_task_id", &params.insert_task_id)
-            .append_pair("live_reason", &params.live_reason);
-    }
-
     /// 获取房间信息
     async fn fetch_room_info(&self) -> LsarResult<RoomInfo> {
-        let api_url = self.build_api_url()?;
+        debug!("Fetching room page: {}", self.room_url);
 
-        trace!("Requesting room info from: {}", api_url);
-        info!("Fetching room information for room {}", self.room_id);
+        let body = self.client.get_text(&self.room_url).await?;
+        let state_regex = Regex::new(r#"\{\\"state\\":(.+?\}),\\"children\\":"#)?;
+        let state_match = state_regex
+            .captures(&body)
+            .ok_or_else(|| LsarError::Other("Failed to find room state in page".to_string()))?;
 
-        let response_data: Value = match self.client.get_json(api_url.as_str()).await {
-            Ok(data) => data,
-            Err(e) => {
-                if let LsarError::Http(HTTPError::Decode) = e {
-                    // 解码错误时重新请求一次
-                    self.client.get_json(api_url.as_str()).await?
-                } else {
-                    return Err(e);
-                }
-            }
+        let state_str = state_match.get(1).unwrap().as_str();
+        debug!("Found room state: {}", state_str);
+
+        let state_json = state_str.replace("\\\"", "\"").replace("\\\\\"", "\\\"");
+        let state: Value = serde_json::from_str(&state_json)?;
+        let room_info = &state["roomStore"]["roomInfo"];
+        let nickname = room_info["anchor"]["nickname"]
+            .as_str()
+            .unwrap()
+            .to_string();
+        let stream_data: StreamData = serde_json::from_value(room_info["room"].clone())?;
+
+        let room_info = RoomInfo {
+            data: RoomData {
+                data: vec![stream_data],
+                user: UserInfo { nickname },
+                partition_road_map: None,
+            },
         };
-        debug!("Room info response received: {}", response_data);
+        info!("Room info: {:?}", room_info);
 
-        self.validate_api_response(&response_data)?;
-
-        let room_info: RoomInfo = serde_json::from_value(response_data)?;
-        info!("Room information fetched successfully");
         Ok(room_info)
-    }
-
-    /// 验证 API 响应
-    fn validate_api_response(&self, response: &Value) -> LsarResult<()> {
-        let status_code = response["status_code"].as_i64().unwrap_or(0);
-
-        if status_code != 0 {
-            if let Some(prompts) = response["data"]["prompts"].as_str() {
-                if prompts == ROOM_CLOSED_MESSAGE {
-                    return Err(RoomStateError::IsClosed.into());
-                }
-            }
-        }
-
-        if let Some(enter_room_id) = response["data"]["enter_room_id"].as_str() {
-            if enter_room_id.is_empty() {
-                return Err(RoomStateError::NotExists.into());
-            }
-        }
-
-        Ok(())
     }
 
     /// 从房间信息中提取解析结果
