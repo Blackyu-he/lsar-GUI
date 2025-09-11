@@ -1,8 +1,6 @@
 import { createMemo, Show } from "solid-js";
 import { AiFillApi, AiFillChrome, AiFillDelete } from "solid-icons/ai";
 
-import { Caption1 } from "fluent-solid";
-
 import { deleteHistoryByID, open } from "~/command";
 import {
   LazyButton,
@@ -11,6 +9,7 @@ import {
   LazySpinner,
   LazyText,
   LazyTooltip,
+  LazyCaption1,
 } from "~/lazy";
 
 import { platforms } from "~/parser";
@@ -49,9 +48,9 @@ const HistoryItem = (props: HistoryItemProps) => {
           <div class={styles.headerHeader}>
             <LazyText weight="semibold">{props.last_title}</LazyText>
 
-            <Caption1 class={styles.category} italic>
+            <LazyCaption1 class={styles.category} italic>
               {props.category}
-            </Caption1>
+            </LazyCaption1>
           </div>
         }
       />
@@ -64,7 +63,7 @@ const HistoryItem = (props: HistoryItemProps) => {
             src={platforms[props.platform].logo}
             alt={platforms[props.platform].label}
           />
-          <Caption1 class={styles.anchor}>{props.anchor}</Caption1>
+          <LazyCaption1 class={styles.anchor}>{props.anchor}</LazyCaption1>
         </div>
 
         <div class={styles.actions}>
