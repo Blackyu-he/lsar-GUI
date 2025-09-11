@@ -97,7 +97,7 @@ impl From<reqwest::Error> for LsarError {
 pub(super) enum RoomStateError {
     Offline,
     NotExists,
-    IsClosed,
+    // IsClosed, // 抖音直播间状态，暂时未使用
     IsReplay,
 }
 
@@ -106,7 +106,7 @@ impl fmt::Display for RoomStateError {
         let string = match self {
             RoomStateError::Offline => "该房间未开播",
             RoomStateError::NotExists => "房间号不存在",
-            RoomStateError::IsClosed => "该房间已被关闭",
+            // RoomStateError::IsClosed => "该房间已被关闭",
             RoomStateError::IsReplay => "该房间正在重播",
         };
         write!(f, "{}", string)
