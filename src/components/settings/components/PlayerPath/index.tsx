@@ -2,7 +2,7 @@ import { Show } from "solid-js";
 
 import { open } from "@tauri-apps/plugin-dialog";
 
-import { LazyButton, LazyTextCaption1 } from "~/lazy";
+import { LazyButton, LazyCaption1 } from "~/lazy";
 
 import SettingItem from "../SettingItem";
 
@@ -26,7 +26,7 @@ const PlayerPath = (props: PlayerPathProps) => {
     <SettingItem label="播放器绝对路径">
       <div class={styles.content}>
         <Show when={props.path}>
-          <LazyTextCaption1 class={styles.path}>{props.path}</LazyTextCaption1>
+          <LazyCaption1 class={styles.path}>{props.path}</LazyCaption1>
         </Show>
 
         <LazyButton

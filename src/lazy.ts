@@ -52,10 +52,6 @@ export const LazyCaption1 = lazy(
   () => import("fluent-solid/lib/components/text/Caption1")
 );
 
-export const LazyTextCaption1 = lazy(
-  () => import("fluent-solid/lib/components/text/Caption1")
-);
-
 export const LazyTextArea = lazy(
   () => import("fluent-solid/lib/components/textarea")
 );
