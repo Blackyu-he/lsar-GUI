@@ -1,12 +1,11 @@
 // mod a_bogus;
 mod models;
 // mod ms_token;
-mod utils;
+// mod utils;
 
 use std::collections::HashMap;
 
 use regex::Regex;
-use reqwest::header::{COOKIE, UPGRADE_INSECURE_REQUESTS};
 use serde_json::Value;
 
 use crate::error::{LsarError, LsarResult, RoomStateError};
@@ -18,7 +17,6 @@ use crate::platform::Platform;
 use super::Parser;
 
 use self::models::{PartitionRoadMap, Resolution, RoomInfo, StreamData};
-use self::utils::{get_ac_nonce, get_ttwid};
 
 const DOUYIN_LIVE_BASE_URL: &str = "https://live.douyin.com";
 // const ROOM_CLOSED_MESSAGE: &str = "该内容暂时无法无法查看";
@@ -38,24 +36,24 @@ impl DouyinParser {
         }
     }
 
-    async fn configure_request_headers(&mut self) -> LsarResult<()> {
-        debug!("Configuring request headers for room {}", self.room_id);
+    // async fn configure_request_headers(&mut self) -> LsarResult<()> {
+    //     debug!("Configuring request headers for room {}", self.room_id);
 
-        self.client.insert_header(UPGRADE_INSECURE_REQUESTS, "1")?;
+    //     self.client.insert_header(UPGRADE_INSECURE_REQUESTS, "1")?;
 
-        let ac_nonce = get_ac_nonce(&self.client, &self.room_url).await?;
+    //     let ac_nonce = get_ac_nonce(&self.client, &self.room_url).await?;
 
-        let cookie = format!("__ac_nonce={}", ac_nonce);
-        self.client.insert_header(COOKIE, &cookie)?;
+    //     let cookie = format!("__ac_nonce={}", ac_nonce);
+    //     self.client.insert_header(COOKIE, &cookie)?;
 
-        let ttwid = get_ttwid(&self.client, &self.room_url).await?;
+    //     let ttwid = get_ttwid(&self.client, &self.room_url).await?;
 
-        let cookie = format!("__ac_nonce={}; ttwid={}", ac_nonce, ttwid);
-        self.client.insert_header(COOKIE, &cookie)?;
+    //     let cookie = format!("__ac_nonce={}; ttwid={}", ac_nonce, ttwid);
+    //     self.client.insert_header(COOKIE, &cookie)?;
 
-        debug!("Request headers configured successfully");
-        Ok(())
-    }
+    //     debug!("Request headers configured successfully");
+    //     Ok(())
+    // }
 
     /// 获取房间信息
     async fn fetch_room_info(&self) -> LsarResult<RoomInfo> {
@@ -183,7 +181,7 @@ impl Parser for DouyinParser {
     async fn parse(&mut self) -> LsarResult<ParsedResult> {
         info!("Starting parse process for Douyin room {}", self.room_id);
 
-        self.configure_request_headers().await?;
+        // self.configure_request_headers().await?;
         let room_info = self.fetch_room_info().await?;
         self.extract_parsed_result(room_info)
     }
