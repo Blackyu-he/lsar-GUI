@@ -3,7 +3,7 @@ use std::error::Error;
 use bytes::Bytes;
 use reqwest::{header::CONTENT_TYPE, Body, Client as InnerClient, Response};
 use serde::{de::DeserializeOwned, Serialize};
-use tauri::http::{HeaderMap, HeaderName, HeaderValue};
+use tauri::http::HeaderMap;
 
 use crate::error::{LsarError, LsarResult};
 
@@ -29,16 +29,16 @@ impl Client {
         client
     }
 
-    pub fn insert_header(&mut self, name: HeaderName, value: &str) -> LsarResult<()> {
-        trace!("Inserting header: {:?} = {}", name, value);
-        let header_value = HeaderValue::from_str(value).map_err(|e| {
-            error!("Failed to create header value: {}", e);
-            LsarError::from(e.to_string())
-        })?;
-        self.headers.insert(name, header_value);
-        debug!("Header inserted successfully");
-        Ok(())
-    }
+    // pub fn insert_header(&mut self, name: HeaderName, value: &str) -> LsarResult<()> {
+    //     trace!("Inserting header: {:?} = {}", name, value);
+    //     let header_value = HeaderValue::from_str(value).map_err(|e| {
+    //         error!("Failed to create header value: {}", e);
+    //         LsarError::from(e.to_string())
+    //     })?;
+    //     self.headers.insert(name, header_value);
+    //     debug!("Header inserted successfully");
+    //     Ok(())
+    // }
 
     pub async fn send_request(
         &self,
