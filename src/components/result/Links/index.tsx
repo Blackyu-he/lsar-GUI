@@ -57,7 +57,7 @@ const Links = (props: LinksProps) => {
   };
 
   return (
-    <div class="parsed-links">
+    <div class={styles.root}>
       <For each={props.links}>
         {(link, index) => (
           <LinkItem

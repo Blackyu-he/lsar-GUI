@@ -2,6 +2,7 @@ import { style } from "@vanilla-extract/css";
 import { themeContract, vars } from "fluent-solid/lib/themes";
 
 export const root = style({
+  display: "flex",
   width: "460px",
   height: "470px",
   marginTop: vars.spacingVerticalM,
@@ -30,4 +31,5 @@ export const content = style({
   display: "flex",
   flexDirection: "column",
   justifyContent: "space-between",
+  overflow: "hidden",
 });
