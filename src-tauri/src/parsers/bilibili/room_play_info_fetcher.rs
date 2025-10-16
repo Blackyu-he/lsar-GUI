@@ -4,7 +4,8 @@ use serde_json::Value;
 
 use crate::error::{LsarResult, RoomStateError};
 
-const BASE_URL: &str = "https://api.live.bilibili.com/xlive/web-room/v2/index/getRoomPlayInfo?protocol=0,1&format=0,1,2&codec=0,1&qn=10000&platform=web&ptype=8&dolby=5&panorama=1&room_id=";
+// qn 30000 是 B 站支持的最高质量，即播放器中的“杜比”选项，其他质量是 20000 的 4K，15000 的 2K，10000 的 1080P 高帧率，400 的 1080P 低帧率，再往下的质量就没必要看了。在请求时直接使用 30000 发起请求，B 站会返回可用的最高质量。
+const BASE_URL: &str = "https://api.live.bilibili.com/xlive/web-room/v2/index/getRoomPlayInfo?protocol=0,1&format=0,1,2&codec=0,1&qn=30000&platform=web&ptype=8&dolby=5&panorama=1&room_id=";
 
 #[derive(Debug, Deserialize)]
 pub struct CDNItem {
@@ -40,7 +41,7 @@ pub struct PlayUrl {
 
 #[derive(Debug, Deserialize)]
 pub(super) struct ResponseData {
-    live_status: i32,
+    live_status: i32, // 0: offline, 1: live, 2: replay
     pub playurl_info: PlayUrlInfo,
 }
 
