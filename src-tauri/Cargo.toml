@@ -39,7 +39,7 @@ sqlx = { version = "0", default-features = false, features = [
 ] }
 dirs = "6"
 md-5 = "0"
-reqwest = { version = "0", default-features = false, features = ["json"] }
+reqwest = { version = "0", default-features = false, features = ["json", "form"] }
 toml = "0"
 open = "5"
 os_info = { version = "3", default-features = false }
