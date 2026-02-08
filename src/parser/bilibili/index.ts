@@ -23,7 +23,7 @@ class BilibiliParser extends LiveStreamParser {
 
 export default function createBilibiliParser(
   input: string | number,
-  cookie: string
+  cookie: string,
 ) {
   let roomID: number | undefined;
   let url: string | undefined;

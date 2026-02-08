@@ -2,9 +2,8 @@ use std::fmt;
 
 use serde::{Serialize, Serializer};
 
-use crate::eval::EvalError;
-
-pub(super) type LsarResult<T> = std::result::Result<T, LsarError>;
+pub(super) type Result<T> = std::result::Result<T, LsarError>;
+pub(super) type LsarResult<T> = Result<T>;
 
 #[derive(Debug, thiserror::Error)]
 pub(super) enum LsarError {
@@ -39,8 +38,6 @@ pub(super) enum LsarError {
     MissKeyField(#[from] MissKeyFieldError),
     #[error(transparent)]
     UrlParse(#[from] url::ParseError),
-    #[error(transparent)]
-    Eval(#[from] EvalError),
     #[error(transparent)]
     SerdeJSON(#[from] serde_json::Error),
     #[error(transparent)]
@@ -138,10 +135,6 @@ pub(super) enum MissKeyFieldError {
     /// 不是所有平台都支持分类，此成员仅用于部分平台
     #[error("解析分类失败")]
     Category,
-    #[error("解析签名函数失败")]
-    SignatureFunction,
-    #[error("解析随机数失败")]
-    RandomNumber,
     #[error("解析房间号失败，请检查房间号是否正确")]
     RoomId,
 }

@@ -22,7 +22,7 @@ class HuyaParser extends LiveStreamParser {
 }
 
 export default function createHuyaParser(
-  input: string | number
+  input: string | number,
 ): HuyaParser | Error {
   let roomID: number | undefined;
   let url: string | undefined;

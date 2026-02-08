@@ -1,12 +1,7 @@
-use std::sync::Arc;
-
 use tauri::{Manager, WebviewUrl, WebviewWindow, WebviewWindowBuilder};
 use time::macros::{format_description, offset};
-use tokio::sync::Mutex;
 use tracing::Level;
 use tracing_subscriber::fmt::time::OffsetTime;
-
-use crate::eval::EvalChannel;
 
 pub fn setup_logging() {
     let fmt = if cfg!(debug_assertions) {
@@ -55,12 +50,6 @@ pub fn setup_app(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>>
     setup_updater(app)?;
 
     create_main_window(app.app_handle())?;
-
-    let eval_channel = EvalChannel {
-        sender: Arc::new(Mutex::new(None)),
-    };
-
-    app.manage(eval_channel);
 
     info!("Application setup completed");
 

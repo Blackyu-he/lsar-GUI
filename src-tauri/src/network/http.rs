@@ -1,30 +1,29 @@
 use std::error::Error;
 
 use bytes::Bytes;
-use reqwest::{header::CONTENT_TYPE, Body, Client as InnerClient, Response};
+use reqwest::{
+    header::{HeaderMap, CONTENT_TYPE},
+    Client as InnerClient, Response,
+};
 use serde::{de::DeserializeOwned, Serialize};
-use tauri::http::HeaderMap;
 
 use crate::error::{LsarError, LsarResult};
 
 #[derive(Clone)]
 pub struct Client {
     pub inner: InnerClient,
-    headers: HeaderMap,
 }
 
 impl Client {
     pub fn new() -> Self {
         trace!("Creating new HttpClient instance");
 
-        let headers = HeaderMap::default();
-
         let inner = InnerClient::builder()
             .user_agent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36")
             .build()
             .unwrap();
 
-        let client = Client { inner, headers };
+        let client = Client { inner };
         debug!("HttpClient instance created with default headers");
         client
     }
@@ -43,9 +42,10 @@ impl Client {
     pub async fn send_request(
         &self,
         request: reqwest::RequestBuilder,
+        headers: Option<HeaderMap>,
     ) -> LsarResult<reqwest::Response> {
         request
-            .headers(self.headers.clone())
+            .headers(headers.unwrap_or_default())
             .send()
             .await
             .map_err(|e| {
@@ -56,7 +56,7 @@ impl Client {
 
     pub async fn get(&self, url: &str) -> LsarResult<Response> {
         info!("Sending GET request to: {}", url);
-        let response = self.send_request(self.inner.get(url)).await?;
+        let response = self.send_request(self.inner.get(url), None).await?;
 
         debug!("GET request successful, status: {}", response.status());
 
@@ -91,9 +91,15 @@ impl Client {
         Ok(bytes)
     }
 
-    pub async fn get_json<T: DeserializeOwned>(&self, url: &str) -> LsarResult<T> {
+    pub async fn get_json<T: DeserializeOwned, H: Into<Option<HeaderMap>>>(
+        &self,
+        url: &str,
+        headers: H,
+    ) -> LsarResult<T> {
         info!("Sending GET request for JSON to: {}", url);
-        let response = self.send_request(self.inner.get(url)).await?;
+        let response = self
+            .send_request(self.inner.get(url), headers.into())
+            .await?;
 
         debug!("GET request successful, headers: {:?}", response.headers());
 
@@ -120,41 +126,21 @@ impl Client {
         Ok(json)
     }
 
-    pub async fn post<D: DeserializeOwned, T: Into<Body>>(
-        &self,
-        url: &str,
-        body: T,
-    ) -> LsarResult<D> {
-        info!("Sending POST request with body to: {}", url);
-
-        let request = self
-            .inner
-            .post(url)
-            .body(body)
-            .header(CONTENT_TYPE, "application/x-www-form-urlencoded");
-
-        let response = self.send_request(request).await?;
-
-        debug!("POST request successful, status: {}", response.status());
-        let json = response.json().await.map_err(|e| {
-            error!("Failed to parse JSON response from POST request: {}", e);
-            LsarError::Http(e.into())
-        })?;
-
-        trace!("JSON response from POST request parsed successfully");
-        Ok(json)
-    }
-
-    pub async fn post_form<D: DeserializeOwned, T: Serialize + ?Sized>(
+    pub async fn post_form<
+        D: DeserializeOwned,
+        T: Serialize + ?Sized,
+        H: Into<Option<HeaderMap>>,
+    >(
         &self,
         url: &str,
         form: &T,
+        headers: H,
     ) -> LsarResult<D> {
         info!("Sending POST request with body to: {}", url);
 
         let request = self.inner.post(url).form(form);
 
-        let response = self.send_request(request).await?;
+        let response = self.send_request(request, headers.into()).await?;
 
         debug!("POST request successful, status: {}", response.status());
         let json = response.json().await.map_err(|e| {
@@ -175,7 +161,7 @@ impl Client {
             .body(body.to_owned())
             .header(CONTENT_TYPE, "text/plain;charset=UTF-8");
 
-        let response = self.send_request(request).await?;
+        let response = self.send_request(request, None).await?;
 
         debug!("POST request successful, status: {}", response.status());
         let json = response.json().await.map_err(|e| {
@@ -193,7 +179,9 @@ impl Client {
         body: &S,
     ) -> LsarResult<T> {
         info!("Sending POST request with JSON body to: {}", url);
-        let response = self.send_request(self.inner.post(url).json(body)).await?;
+        let response = self
+            .send_request(self.inner.post(url).json(body), None)
+            .await?;
 
         debug!("POST request successful, status: {}", response.status());
         let json = response.json().await.map_err(|e| {
