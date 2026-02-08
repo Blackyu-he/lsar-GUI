@@ -19,7 +19,7 @@ impl StreamInfoParser {
             return Err(RoomStateError::NotExists.into());
         }
 
-        let re = Regex::new(r"\$ROOM\.room_id = ?(\d+);")?;
+        let re = Regex::new(r"getLegacyFirstStream\(\{ roomID: ?(\d+),")?;
         let captures = re.captures(html).ok_or_else(|| {
             error!("Failed to extract final room ID");
             MissKeyFieldError::RoomId
@@ -37,7 +37,7 @@ impl StreamInfoParser {
     pub async fn parse(&self, room_info: RoomInfo, html: &str) -> LsarResult<ParsedResult> {
         trace!("Parsing stream info");
 
-        if room_info.error != Some(-15) && room_info.data.rtmp_live.is_none() {
+        if room_info.error != -15 && room_info.data.rtmp_live.is_none() {
             warn!("Room is offline");
             return Err(RoomStateError::Offline.into());
         }
@@ -64,7 +64,7 @@ impl StreamInfoParser {
     fn parse_anchor_name(&self, html: &str) -> LsarResult<String> {
         trace!("Parsing anchor name");
 
-        let re = Regex::new(r#"<div class="Title-anchorName" title="(.+?)">"#)?;
+        let re = Regex::new(r#"<h3 class="anchorName.+?">(.+?)</h3>"#)?;
         re.captures(html)
             .and_then(|cap| cap.get(1))
             .map(|m| m.as_str().to_string())
@@ -91,7 +91,7 @@ impl StreamInfoParser {
     fn parse_stream_title(&self, html: &str) -> LsarResult<String> {
         trace!("Parsing stream title");
 
-        let re = Regex::new(r#"<h3 class="Title-header">(.+?)</h3>"#)?;
+        let re = Regex::new(r#"<h1 class="roomName.+?">(.+?)</h1>"#)?;
         re.captures(html)
             .and_then(|cap| cap.get(1))
             .map(|m| m.as_str().to_string())

@@ -1,21 +1,19 @@
 use serde_json::Value;
-use tauri::AppHandle;
 
 use crate::error::LsarResult;
-use crate::eval::{EvalChannel, EvalSender};
+use crate::parsers::douyu::encryption_fetcher::EncryptionFetcher;
 use crate::parsers::{ParsedResult, Parser};
 
 mod constants;
+mod encryption_fetcher;
 mod models;
 mod room_info_fetcher;
 mod room_page_fetcher;
-mod signature_generator;
 mod stream_info_parser;
 
 use models::RoomInfo;
 use room_info_fetcher::RoomInfoFetcher;
 use room_page_fetcher::RoomPageFetcher;
-use signature_generator::SignatureGenerator;
 use stream_info_parser::StreamInfoParser;
 
 use crate::network::http::Client;
@@ -25,13 +23,13 @@ pub struct DouyuParser {
     final_room_id: u64,
     http_client: Client,
     room_page_fetcher: RoomPageFetcher,
-    signature_generator: SignatureGenerator,
     room_info_fetcher: RoomInfoFetcher,
     stream_info_parser: StreamInfoParser,
+    encryption_fetcher: EncryptionFetcher,
 }
 
 impl DouyuParser {
-    pub fn new(room_id: u64, eval_channel_sender: EvalSender, app_handle: AppHandle) -> Self {
+    pub fn new(room_id: u64) -> Self {
         let http_client = Client::new();
 
         DouyuParser {
@@ -39,9 +37,9 @@ impl DouyuParser {
             final_room_id: 0,
             http_client: http_client.clone(),
             room_page_fetcher: RoomPageFetcher::new(http_client.clone()),
-            signature_generator: SignatureGenerator::new(eval_channel_sender, app_handle),
             room_info_fetcher: RoomInfoFetcher::new(http_client.clone()),
             stream_info_parser: StreamInfoParser::new(),
+            encryption_fetcher: EncryptionFetcher::new(http_client.clone()),
         }
     }
 
@@ -53,7 +51,7 @@ impl DouyuParser {
 
     async fn is_replay(&self) -> LsarResult<bool> {
         let url = format!("https://www.douyu.com/betard/{}", self.final_room_id);
-        let body: Value = self.http_client.get_json(&url).await?;
+        let body: Value = self.http_client.get_json(&url, None).await?;
         let is_replay = body["room"]["videoLoop"].as_i64().unwrap_or(0);
         info!("Room replay status: {}", is_replay);
         Ok(is_replay == 1)
@@ -72,17 +70,15 @@ impl Parser for DouyuParser {
             return Err(crate::error::RoomStateError::IsReplay.into());
         }
 
-        let signature_function = self.signature_generator.extract_signature_function(&html)?;
-        let params = self
-            .signature_generator
-            .generate_params(self.final_room_id, &signature_function)
+        let encryption = self
+            .encryption_fetcher
+            .fetch_encryption(self.final_room_id)
             .await?;
-
-        debug!("Generated params: {}", params);
+        debug!("Got encryption: {:?}", encryption);
 
         let room_info: RoomInfo = self
             .room_info_fetcher
-            .fetch(self.final_room_id, &params)
+            .fetch(self.final_room_id, &encryption)
             .await?;
         let parsed_result = self.stream_info_parser.parse(room_info, &html).await?;
 
@@ -92,11 +88,7 @@ impl Parser for DouyuParser {
 }
 
 #[tauri::command]
-pub async fn parse_douyu(
-    room_id: u64,
-    eval_channel: tauri::State<'_, EvalChannel>,
-    app_handle: tauri::AppHandle,
-) -> LsarResult<ParsedResult> {
-    let mut douyu = DouyuParser::new(room_id, eval_channel.sender.clone(), app_handle);
+pub async fn parse_douyu(room_id: u64) -> LsarResult<ParsedResult> {
+    let mut douyu = DouyuParser::new(room_id);
     douyu.parse().await
 }

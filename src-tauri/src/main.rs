@@ -4,7 +4,6 @@
 mod config;
 mod data;
 mod error;
-mod eval;
 mod global;
 mod http;
 mod log;
@@ -30,7 +29,6 @@ use tauri::{AppHandle, Manager};
 use crate::config::{read_config_file, write_config_file};
 use crate::data::db::{delete_a_history_by_id, get_all_history, insert_a_history};
 use crate::error::LsarResult;
-use crate::eval::eval_result;
 use crate::http::{get, post};
 use crate::log::{debug, error, info, trace, warn};
 use crate::parsers::{parse_bigo, parse_bilibili, parse_douyin, parse_douyu, parse_huya, parse_yy};
@@ -113,7 +111,6 @@ fn main() {
             open,
             read_config_file,
             write_config_file,
-            eval_result,
             parse_bigo,
             parse_douyu,
             parse_huya,

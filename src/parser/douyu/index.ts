@@ -1,6 +1,3 @@
-import { listen } from "@tauri-apps/api/event";
-
-import { evalResult } from "~/command";
 import { parseDouyu } from "~/commands/parser";
 
 import LiveStreamParser from "../base";
@@ -17,18 +14,11 @@ class DouyuParser extends LiveStreamParser {
   }
 
   async parse(): Promise<ParsedResult | Error> {
-    const unlisten = await listen<string>("JS-EVAL", async (e) => {
-      const result = eval(e.payload);
-      await evalResult(result);
-    });
-
     try {
       const result = await parseDouyu(this.roomID);
       return result;
     } catch (e) {
       return Error(String(e));
-    } finally {
-      unlisten();
     }
   }
 }

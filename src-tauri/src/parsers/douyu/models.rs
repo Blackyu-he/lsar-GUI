@@ -2,7 +2,7 @@ use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]
 pub struct RoomInfo {
-    pub error: Option<i32>,
+    pub error: i32,
     pub msg: String,
     pub data: RoomData,
 }

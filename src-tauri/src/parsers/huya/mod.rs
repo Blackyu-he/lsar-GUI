@@ -251,8 +251,7 @@ impl HuyaParser {
         let ss = md5(format!(
             "{}|{}|{}",
             seq_id, query["ctype"][0], query["t"][0]
-        ))
-        .await;
+        ));
         debug!("Generated ss: {}", ss);
 
         let fm =
@@ -262,7 +261,7 @@ impl HuyaParser {
                 e
             })?;
 
-        let ws_secret = md5(fm).await;
+        let ws_secret = md5(fm);
         query.insert("wsSecret".to_string(), vec![ws_secret.clone()]);
         debug!("Generated wsSecret: {}", ws_secret);
 
